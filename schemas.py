@@ -2,47 +2,36 @@
 Database Schemas
 
 Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
 Each Pydantic model represents a collection in your database.
 Model name is converted to lowercase for the collection name:
 - User -> "user" collection
 - Product -> "product" collection
-- BlogPost -> "blogs" collection
+- Application -> "application" collection
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List, Literal
 
-# Example schemas (replace with your own):
-
-class User(BaseModel):
+class Application(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    Credit card application submissions
+    Collection name: "application"
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    # Applicant inputs
+    name: str = Field(..., description="Applicant full name")
+    age: int = Field(..., ge=18, le=100, description="Age in years")
+    income: float = Field(..., ge=0, description="Annual income in USD")
+    employment_status: Literal['employed','self-employed','student','unemployed','retired'] = Field(...)
+    employment_length: float = Field(..., ge=0, le=60, description="Years in current employment")
+    credit_score: int = Field(..., ge=300, le=850, description="FICO score")
+    debt_to_income: float = Field(..., ge=0, le=1, description="DTI ratio 0-1")
+    existing_cards: int = Field(..., ge=0, le=20)
+    late_payments: int = Field(..., ge=0, le=50)
+    loan_amount: float = Field(..., ge=0, description="Requested credit limit")
+    loan_purpose: str = Field(..., description="Purpose/notes")
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
-
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+    # Output fields
+    approved: bool = Field(...)
+    probability: float = Field(..., ge=0, le=1)
+    explanation: List[str] = Field(default_factory=list)
+    next_steps: List[str] = Field(default_factory=list)
